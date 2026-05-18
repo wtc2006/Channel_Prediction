@@ -1,99 +1,138 @@
-# Wireless Channel Prediction & Early Warning System 🚀
+# Wireless Channel Prediction & Early Warning System
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Release](https://img.shields.io/github/v/release/wtc2006/Channel_Prediction?label=release)](https://github.com/wtc2006/Channel_Prediction/releases)
 [![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=flat&logo=pytorch&logoColor=white)](https://pytorch.org/)
 
-这是一个基于机器学习与深度学习的无线信道质量（SINR）预测与劣化预警系统。该项目模拟了真实的物理环境（路径损耗、阴影衰落、快衰落），并提供了从数据生成到智能预警的完整链路。
+基于机器学习与深度学习的无线信道质量（SINR）预测与劣化预警系统。项目模拟路径损耗、阴影衰落与快衰落等物理过程，并提供从数据生成、模型训练到智能预警的完整流水线。
 
----
+## 功能概览
 
-## 🌟 项目亮点 (Highlights)
+| 模块 | 说明 |
+|------|------|
+| 数据模拟 | 合成 SINR 时序，含路径损耗、慢衰落、突发事件与瑞利快衰落 |
+| 随机森林预测 | 滑动窗口 + 趋势特征，适合快速基线建模 |
+| LSTM 预测 | PyTorch 序列模型，捕捉长期信道变化规律 |
+| 智能预警 | 基于预测值的临界区 / 缓冲带两级预警 |
 
-- **多组件物理建模**：真实模拟无线信号的路径损耗、环境遮挡及多径效应。
-- **混合算法架构**：内置 **Random Forest (随机森林)** 与 **LSTM (深度学习)** 双预测引擎。
-- **工业级预警机制**：支持自适应缓冲区（Warning Buffer）的实时阈值监控。
-- **架构化设计**：采用 `config.py` 统一管理参数，易于扩展与二次开发。
+## 技术栈
 
----
-
-## 🛠️ 技术栈 (Tech Stack)
-
-- **数据处理**: Pandas, NumPy
+- **数据处理**: NumPy, Pandas
 - **机器学习**: Scikit-learn (Random Forest)
 - **深度学习**: PyTorch (LSTM)
 - **可视化**: Matplotlib
 
----
+## 快速开始
 
-## 🚀 快速开始 (Quick Start)
+### 环境要求
 
-### 1. 环境安装
+- Python 3.8+
+- 建议使用虚拟环境
+
+### 安装依赖
+
 ```bash
-pip install numpy pandas matplotlib scikit-learn torch joblib
+pip install -r requirements.txt
 ```
 
-### 2. 一键运行全流程
+### 一键运行全流程
+
+在项目根目录执行：
+
 ```bash
 python src/main.py
 ```
 
----
+流水线将依次完成：
 
-## 📂 目录结构 (Project Structure)
+1. 生成模拟信道数据（`channel_data.csv`）
+2. 训练随机森林模型（`channel_model.pkl`）
+3. 训练 LSTM 模型并输出评估图
+4. 运行预警引擎并生成监控图
+
+### 分步运行（可选）
+
+```bash
+python src/data_generator.py      # 仅生成数据
+python src/model_training.py      # 仅训练随机森林
+python src/dl_model_training.py   # 仅训练 LSTM
+python src/early_warning.py       # 仅运行预警分析
+```
+
+> 运行后会在项目根目录生成 `channel_data.csv`、`channel_model.pkl` 等文件，这些已被 `.gitignore` 忽略，不会提交到仓库。
+
+## 配置说明
+
+在 [`src/config.py`](src/config.py) 中可调整核心参数：
+
+| 参数 | 默认值 | 含义 |
+|------|--------|------|
+| `WINDOW_SIZE` | 15 | 滑动窗口长度 |
+| `DATA_SIZE` | 1200 | 模拟采样点数 |
+| `TEST_SIZE` | 0.2 | 测试集比例 |
+| `CRITICAL_THRESHOLD` | 15 | 严重预警阈值 (dB) |
+| `WARNING_BUFFER` | 2 | 预警缓冲带 (dB) |
+
+## 项目结构
 
 ```text
 .
+├── assets/                   # README 展示用示意图
 ├── src/
-│   ├── config.py             # 系统核心参数配置
-│   ├── data_generator.py     # 物理环境信号模拟器
-│   ├── model_training.py     # 随机森林模型训练
-│   ├── dl_model_training.py  # LSTM 深度学习模型训练
-│   ├── early_warning.py      # 智能预警逻辑实现
-│   └── main.py               # 项目总控入口
-├── .gitignore                # Git 忽略文件配置
-├── LICENSE                   # MIT 开源协议
-├── requirements.txt          # 项目依赖清单
-└── README.md                 # 项目说明文档
+│   ├── config.py             # 全局配置
+│   ├── data_generator.py     # 信道数据模拟
+│   ├── model_training.py     # 随机森林训练
+│   ├── dl_model_training.py  # LSTM 训练
+│   ├── early_warning.py      # 预警逻辑
+│   └── main.py               # 流水线入口
+├── .gitignore
+├── LICENSE                   # MIT 许可证
+├── requirements.txt
+└── README.md
 ```
 
----
+## 可视化展示
 
-## 📈 可视化展示 (Visualizations)
+### 1. 信道模拟
 
-### 1. 信道模拟 (Data Simulation)
-真实模拟无线信号的路径损耗、环境遮挡及多径效应。
 ![Data Simulation](assets/01-channel-simulation.png)
 
-### 2. 模型表现对比 (Model Performance)
-对比基础机器学习与深度学习在处理复杂衰落时的预测能力。
+### 2. 模型表现对比
 
-| Random Forest (机器学习) | LSTM (深度学习) |
+| Random Forest | LSTM |
 | :---: | :---: |
 | ![RF Results](assets/02-ml-rf-results.png) | ![LSTM Results](assets/03-dl-lstm-results.png) |
 
-### 3. 智能预警监控 (Smart Warning Monitoring)
-动态展示信号进入“缓冲区”与“危险区”的过程，实现前瞻性预警。
+### 3. 智能预警监控
+
 ![Warning System](assets/04-warning-monitoring.png)
 
----
+## 工作原理
 
-## 🔬 核心原理 (How it Works)
+1. **滑动窗口**：将连续 SINR 序列转为监督学习样本。
+2. **趋势特征**：随机森林在窗口基础上增加一阶差分，提升对突变趋势的敏感度。
+3. **LSTM 建模**：利用门控结构记忆较长时域上的衰落模式。
+4. **分级预警**：预测值低于临界阈值触发严重预警；进入缓冲带则发出普通预警。
 
-1. **数据切片**: 利用滑动窗口（Sliding Window）将连续信号转化为模型可理解的特征矩阵。
-2. **特征增强**: 在 [model_training.py](file:///e:/Channel_Prediction/first/model_training.py) 中引入了“趋势特征”，捕捉信号的一阶导数变化。
-3. **深度学习**: [dl_model_training.py](file:///e:/Channel_Prediction/first/dl_model_training.py) 使用 LSTM 门控机制自动记忆长期的信道衰落规律。
+## 版本与发布
 
----
+正式版本见 [GitHub Releases](https://github.com/wtc2006/Channel_Prediction/releases)。
 
-## 🚀 未来计划 (Roadmap)
+| 版本 | 说明 |
+|------|------|
+| v1.0.0 | 首个稳定版：数据模拟、RF/LSTM 双模型、预警引擎与文档 |
 
-- [ ] 集成 Transformer 算法提升长序列预测能力。
-- [ ] 开发基于 Flask/Streamlit 的 Web 实时监控看板。
-- [ ] 支持多天线 (MIMO) 场景下的信道预测。
+## 路线图
 
----
+- [ ] 集成 Transformer 提升长序列预测
+- [ ] Web 实时监控看板（Flask / Streamlit）
+- [ ] 支持 MIMO 多天线场景
 
-## 🤝 贡献与交流
+## 许可证
 
-欢迎提交 Issue 或 Pull Request 来优化模型！如果你觉得这个项目对你有帮助，请点一个 **Star** ⭐。
+本项目采用 [MIT License](LICENSE)，可自由使用、修改与分发，使用时请保留版权声明。
+
+## 贡献
+
+欢迎通过 Issue 或 Pull Request 参与改进。若本项目对你有帮助，欢迎点个 **Star**。
