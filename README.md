@@ -44,6 +44,19 @@ pip install -r requirements.txt
 python src/main.py
 ```
 
+在无图形界面的服务器或 CI 环境中，可以使用非交互式绘图后端：
+
+```bash
+MPLBACKEND=Agg python src/main.py
+```
+
+Windows 控制台若遇到中文或符号输出编码问题，可先设置：
+
+```powershell
+$env:PYTHONIOENCODING="utf-8"
+python src/main.py
+```
+
 流水线将依次完成：
 
 1. 生成模拟信道数据（`channel_data.csv`）
@@ -62,6 +75,19 @@ python src/early_warning.py       # 仅运行预警分析
 
 > 运行后会在项目根目录生成 `channel_data.csv`、`channel_model.pkl` 等文件，这些已被 `.gitignore` 忽略，不会提交到仓库。
 
+### 运行测试
+
+```bash
+MPLBACKEND=Agg python -m unittest discover -s tests -v
+```
+
+## 工程特性
+
+- 使用 `pathlib` 管理项目根目录，脚本可从不同工作目录稳定运行。
+- 各模块提供函数入口，既可命令行分步运行，也可被测试或其他项目复用。
+- 主流程使用 `subprocess.run(..., check=True)` 串联步骤，任一阶段失败都会立即暴露。
+- 随机森林与 LSTM 使用统一随机种子，便于复现实验结果。
+
 ## 配置说明
 
 在 [`src/config.py`](src/config.py) 中可调整核心参数：
@@ -71,13 +97,16 @@ python src/early_warning.py       # 仅运行预警分析
 | `WINDOW_SIZE` | 15 | 滑动窗口长度 |
 | `DATA_SIZE` | 1200 | 模拟采样点数 |
 | `TEST_SIZE` | 0.2 | 测试集比例 |
+| `RANDOM_SEED` | 42 | 随机种子 |
 | `CRITICAL_THRESHOLD` | 15 | 严重预警阈值 (dB) |
 | `WARNING_BUFFER` | 2 | 预警缓冲带 (dB) |
+| `LSTM_EPOCHS` | 100 | LSTM 训练轮数 |
 
 ## 项目结构
 
 ```text
 .
+├── .github/workflows/ci.yml  # GitHub Actions 自动验证
 ├── assets/                   # README 展示用示意图
 ├── src/
 │   ├── config.py             # 全局配置
@@ -86,6 +115,7 @@ python src/early_warning.py       # 仅运行预警分析
 │   ├── dl_model_training.py  # LSTM 训练
 │   ├── early_warning.py      # 预警逻辑
 │   └── main.py               # 流水线入口
+├── tests/                    # 冒烟测试
 ├── .gitignore
 ├── LICENSE                   # MIT 许可证
 ├── requirements.txt
