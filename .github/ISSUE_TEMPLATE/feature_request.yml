@@ -1,0 +1,31 @@
+name: Feature request
+description: Suggest a model, dataset, visualization, or engineering improvement.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: Why would this feature improve the project?
+      placeholder: Explain the use case or experiment you want to support.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What should be changed or added?
+      placeholder: Describe the model, data flow, UI, or API change.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Optional. Mention other approaches you considered.
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Links, papers, screenshots, or benchmark expectations.

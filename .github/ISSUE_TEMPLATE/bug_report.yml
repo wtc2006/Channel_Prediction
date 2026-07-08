@@ -1,0 +1,40 @@
+name: Bug report
+description: Report a reproducible problem in the pipeline, model training, or warning engine.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Problem
+      description: What went wrong?
+      placeholder: Describe the failure and what you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Please include commands and relevant output.
+      placeholder: |
+        1. Run `python src/main.py`
+        2. See error ...
+    validations:
+      required: true
+  - type: input
+    id: python
+    attributes:
+      label: Python version
+      placeholder: "Python 3.10.13"
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment notes
+      description: OS, PyTorch version, CPU/GPU details, or anything unusual.
+      placeholder: "Windows 11, PyTorch ..., CUDA ..."
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      render: shell
+      placeholder: Paste the relevant traceback or command output.
