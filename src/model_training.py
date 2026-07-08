@@ -33,6 +33,8 @@ def train_random_forest(
     window_size=config.WINDOW_SIZE,
     test_size=config.TEST_SIZE,
     random_seed=config.RANDOM_SEED,
+    n_estimators=config.RF_ESTIMATORS,
+    plot_path=config.RF_RESULTS_PLOT,
     show_plot=True,
 ):
     """Train the Random Forest baseline and save the model."""
@@ -47,7 +49,7 @@ def train_random_forest(
         shuffle=False,
     )
 
-    model = RandomForestRegressor(n_estimators=100, random_state=random_seed)
+    model = RandomForestRegressor(n_estimators=n_estimators, random_state=random_seed)
     model.fit(X_train, y_train)
 
     y_pred_test = model.predict(X_test)
@@ -62,19 +64,30 @@ def train_random_forest(
     joblib.dump(model, model_path)
     print(f"Success: Model saved to {model_path}")
 
-    if show_plot:
-        plt.figure(figsize=(12, 6))
-        plt.plot(y_test[:150], label='Ground Truth (Actual)', color='blue')
-        plt.plot(y_pred_test[:150], label='Optimized Prediction (RandomForest)', color='red', linestyle='--')
-        plt.title("Model Optimization: Training/Testing Performance")
-        plt.legend()
-        plt.grid(True)
-        plt.show()
+    if show_plot or plot_path:
+        fig, ax = plt.subplots(figsize=(12, 6))
+        ax.plot(y_test[:150], label='Ground Truth (Actual)', color='#2563eb', linewidth=1.8)
+        ax.plot(y_pred_test[:150], label='Random Forest Prediction', color='#dc2626', linestyle='--', linewidth=1.8)
+        ax.set_title(f"Random Forest Channel Prediction | MAE {mae:.2f} dB, RMSE {rmse:.2f} dB")
+        ax.set_xlabel("Test sample")
+        ax.set_ylabel("SINR (dB)")
+        ax.legend()
+        ax.grid(True, alpha=0.35)
+        fig.tight_layout()
+        if plot_path:
+            plot_path.parent.mkdir(parents=True, exist_ok=True)
+            fig.savefig(plot_path, dpi=180)
+            print(f"Success: RF result plot saved to {plot_path}")
+        if show_plot:
+            plt.show()
+        else:
+            plt.close(fig)
 
     return {
         'model': model,
         'mae': mae,
         'rmse': rmse,
+        'n_estimators': n_estimators,
         'y_test': y_test,
         'y_pred_test': y_pred_test,
     }

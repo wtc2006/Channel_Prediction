@@ -36,11 +36,12 @@ class PipelineSmokeTest(unittest.TestCase):
             rf_model_path = temp_path / "channel_model.pkl"
             lstm_model_path = temp_path / "channel_lstm_model.pth"
 
-            generate_channel_data(data_size=80, output_path=data_path, show_plot=False)
+            generate_channel_data(data_size=80, output_path=data_path, plot_path=None, show_plot=False)
             rf_result = train_random_forest(
                 data_path=data_path,
                 model_path=rf_model_path,
                 window_size=8,
+                plot_path=None,
                 show_plot=False,
             )
             lstm_result = train_lstm(
@@ -48,6 +49,7 @@ class PipelineSmokeTest(unittest.TestCase):
                 model_path=lstm_model_path,
                 window_size=8,
                 epochs=2,
+                plot_path=None,
                 show_plot=False,
             )
             warning_result = run_warning_engine(
@@ -56,13 +58,17 @@ class PipelineSmokeTest(unittest.TestCase):
                 start_point=20,
                 end_point=35,
                 window_size=8,
+                plot_path=None,
+                verbose=False,
                 show_plot=False,
             )
 
             self.assertTrue(rf_model_path.exists())
             self.assertTrue(lstm_model_path.exists())
             self.assertGreaterEqual(rf_result["mae"], 0)
+            self.assertGreaterEqual(rf_result["rmse"], 0)
             self.assertGreaterEqual(lstm_result["mae"], 0)
+            self.assertGreaterEqual(lstm_result["rmse"], 0)
             self.assertEqual(len(warning_result["predictions"]), 15)
 
 

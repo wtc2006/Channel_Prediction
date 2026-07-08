@@ -19,9 +19,19 @@ WARNING_BUFFER = 2        # 预警缓冲带 (dB)
 LSTM_EPOCHS = 100
 LSTM_HIDDEN_SIZE = 32
 LSTM_LEARNING_RATE = 0.01
+RF_ESTIMATORS = 200
 
 # 文件路径
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+ASSETS_DIR = PROJECT_ROOT / 'assets'
 DATA_PATH = PROJECT_ROOT / 'channel_data.csv'
 MODEL_PATH = PROJECT_ROOT / 'channel_model.pkl'
 LSTM_MODEL_PATH = PROJECT_ROOT / 'channel_lstm_model.pth'
+BENCHMARK_METRICS_PATH = ASSETS_DIR / 'benchmark-metrics.json'
+
+# README 可视化资产
+CHANNEL_SIMULATION_PLOT = ASSETS_DIR / '01-channel-simulation.png'
+RF_RESULTS_PLOT = ASSETS_DIR / '02-ml-rf-results.png'
+LSTM_RESULTS_PLOT = ASSETS_DIR / '03-dl-lstm-results.png'
+WARNING_MONITORING_PLOT = ASSETS_DIR / '04-warning-monitoring.png'
+MODEL_COMPARISON_PLOT = ASSETS_DIR / '05-model-comparison.png'

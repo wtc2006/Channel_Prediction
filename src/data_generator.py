@@ -8,6 +8,7 @@ def generate_channel_data(
     data_size=config.DATA_SIZE,
     output_path=config.DATA_PATH,
     random_seed=config.RANDOM_SEED,
+    plot_path=config.CHANNEL_SIMULATION_PLOT,
     show_plot=True,
 ):
     """Generate simulated SINR data and save it as a CSV file."""
@@ -39,16 +40,24 @@ def generate_channel_data(
     df.to_csv(output_path, index=False)
     print(f"Success: Data generated and saved to {output_path}")
 
-    if show_plot:
-        plt.figure(figsize=(12, 6))
-        plt.plot(t, sinr, label='Combined Signal (PathLoss + Shadowing + Fading)', alpha=0.7)
-        plt.axvspan(800, 1000, color='red', alpha=0.1, label='Sudden Degradation Zone')
-        plt.title("Optimized Data: Multi-component Wireless Channel Simulation")
-        plt.xlabel("Time (s)")
-        plt.ylabel("Signal Quality (SINR in dB)")
-        plt.legend()
-        plt.grid(True, linestyle='--')
-        plt.show()
+    if show_plot or plot_path:
+        fig, ax = plt.subplots(figsize=(12, 6))
+        ax.plot(t, sinr, label='Combined Signal (PathLoss + Shadowing + Fading)', alpha=0.75, linewidth=1.6)
+        ax.axvspan(800, min(1000, data_size), color='red', alpha=0.12, label='Sudden Degradation Zone')
+        ax.set_title("Multi-component Wireless Channel Simulation")
+        ax.set_xlabel("Time (s)")
+        ax.set_ylabel("Signal Quality (SINR in dB)")
+        ax.legend()
+        ax.grid(True, linestyle='--', alpha=0.45)
+        fig.tight_layout()
+        if plot_path:
+            plot_path.parent.mkdir(parents=True, exist_ok=True)
+            fig.savefig(plot_path, dpi=180)
+            print(f"Success: Simulation plot saved to {plot_path}")
+        if show_plot:
+            plt.show()
+        else:
+            plt.close(fig)
 
     return df
 

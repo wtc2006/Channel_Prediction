@@ -1,0 +1,25 @@
+{
+  "dataset": {
+    "data_size": 1200,
+    "window_size": 15,
+    "test_size": 0.2,
+    "random_seed": 42
+  },
+  "random_forest": {
+    "mae_db": 1.2145,
+    "rmse_db": 1.5066,
+    "n_estimators": 200
+  },
+  "lstm": {
+    "mae_db": 1.0141,
+    "rmse_db": 1.2771,
+    "epochs": 100,
+    "hidden_size": 32
+  },
+  "warning_engine": {
+    "critical_count": 77,
+    "buffer_count": 83,
+    "start_point": 750,
+    "end_point": 1100
+  }
+}

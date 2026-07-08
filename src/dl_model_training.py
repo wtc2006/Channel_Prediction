@@ -3,6 +3,7 @@ import torch.nn as nn
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.metrics import mean_squared_error
 import config
 
 
@@ -39,9 +40,10 @@ def train_lstm(
     test_size=config.TEST_SIZE,
     epochs=config.LSTM_EPOCHS,
     random_seed=config.RANDOM_SEED,
+    plot_path=config.LSTM_RESULTS_PLOT,
     show_plot=True,
 ):
-    """Train the LSTM model and save its state_dict."""
+    """Train the LSTM model and save a checkpoint with normalization metadata."""
     np.random.seed(random_seed)
     torch.manual_seed(random_seed)
 
@@ -53,10 +55,18 @@ def train_lstm(
     X_train, X_test = X[:split], X[split:]
     y_train, y_test = y[:split], y[split:]
 
-    X_train_t = torch.FloatTensor(X_train).unsqueeze(-1)
-    y_train_t = torch.FloatTensor(y_train).unsqueeze(-1)
-    X_test_t = torch.FloatTensor(X_test).unsqueeze(-1)
-    y_test_t = torch.FloatTensor(y_test).unsqueeze(-1)
+    train_mean = float(X_train.mean())
+    train_std = float(X_train.std())
+    if train_std == 0:
+        raise ValueError("Training data standard deviation is zero; cannot normalize.")
+
+    X_train_norm = (X_train - train_mean) / train_std
+    X_test_norm = (X_test - train_mean) / train_std
+    y_train_norm = (y_train - train_mean) / train_std
+
+    X_train_t = torch.FloatTensor(X_train_norm).unsqueeze(-1)
+    y_train_t = torch.FloatTensor(y_train_norm).unsqueeze(-1)
+    X_test_t = torch.FloatTensor(X_test_norm).unsqueeze(-1)
 
     model = SimpleLSTM()
     criterion = nn.MSELoss()
@@ -79,30 +89,66 @@ def train_lstm(
 
     model.eval()
     with torch.no_grad():
-        predictions = model(X_test_t).numpy()
-        mae = np.mean(np.abs(predictions - y_test_t.numpy()))
+        predictions_norm = model(X_test_t).numpy().reshape(-1)
+        predictions = predictions_norm * train_std + train_mean
+        mae = np.mean(np.abs(predictions - y_test))
+        rmse = np.sqrt(mean_squared_error(y_test, predictions))
 
     print("\nLSTM Success: Training Completed!")
     print(f"LSTM Mean Absolute Error (MAE): {mae:.4f} dB")
+    print(f"LSTM Root Mean Square Error (RMSE): {rmse:.4f} dB")
 
-    torch.save(model.state_dict(), model_path)
+    torch.save(
+        {
+            'model_state_dict': model.state_dict(),
+            'window_size': window_size,
+            'hidden_size': config.LSTM_HIDDEN_SIZE,
+            'train_mean': train_mean,
+            'train_std': train_std,
+            'epochs': epochs,
+            'mae': mae,
+            'rmse': rmse,
+        },
+        model_path,
+    )
     print(f"Success: LSTM model saved to {model_path}")
 
-    if show_plot:
-        plt.figure(figsize=(12, 6))
-        plt.plot(y_test[:150], label='Ground Truth', color='blue')
-        plt.plot(predictions[:150], label='LSTM Prediction', color='green', linestyle='--')
-        plt.title("Deep Learning: LSTM Channel Prediction Performance")
-        plt.legend()
-        plt.grid(True)
-        plt.show()
+    if show_plot or plot_path:
+        fig, axes = plt.subplots(1, 2, figsize=(14, 5.5))
+
+        axes[0].plot(y_test[:150], label='Ground Truth', color='#2563eb', linewidth=1.8)
+        axes[0].plot(predictions[:150], label='LSTM Prediction', color='#16a34a', linestyle='--', linewidth=1.8)
+        axes[0].set_title(f"LSTM Prediction | MAE {mae:.2f} dB, RMSE {rmse:.2f} dB")
+        axes[0].set_xlabel("Test sample")
+        axes[0].set_ylabel("SINR (dB)")
+        axes[0].legend()
+        axes[0].grid(True, alpha=0.35)
+
+        axes[1].plot(losses, color='#7c3aed', linewidth=1.8)
+        axes[1].set_title("Normalized Training Loss")
+        axes[1].set_xlabel("Epoch")
+        axes[1].set_ylabel("MSE")
+        axes[1].grid(True, alpha=0.35)
+
+        fig.tight_layout()
+        if plot_path:
+            plot_path.parent.mkdir(parents=True, exist_ok=True)
+            fig.savefig(plot_path, dpi=180)
+            print(f"Success: LSTM result plot saved to {plot_path}")
+        if show_plot:
+            plt.show()
+        else:
+            plt.close(fig)
 
     return {
         'model': model,
         'mae': mae,
+        'rmse': rmse,
         'losses': losses,
         'y_test': y_test,
         'predictions': predictions,
+        'train_mean': train_mean,
+        'train_std': train_std,
     }
 
 
